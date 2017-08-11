@@ -14,7 +14,7 @@ class UKF {
 public:
 
   ///* initially set to false, set to true in first call of ProcessMeasurement
-  bool is_initialized_;
+  bool initialized_;
 
   ///* if this is false, laser measurements will be ignored (except for init)
   bool use_laser_;
@@ -27,6 +27,9 @@ public:
 
   ///* state covariance matrix
   MatrixXd P_;
+
+  ///* augmented sigma points
+  MatrixXd Xsig_aug_;
 
   ///* predicted sigma points matrix
   MatrixXd Xsig_pred_;
@@ -67,6 +70,8 @@ public:
   ///* Sigma point spreading parameter
   double lambda_;
 
+  double NIS_laser_;
+  double NIS_radar_;
 
   /**
    * Constructor
@@ -78,11 +83,19 @@ public:
    */
   virtual ~UKF();
 
+  void Init(MeasurementPackage meas_package);
+
   /**
    * ProcessMeasurement
    * @param meas_package The latest measurement data of either radar or laser
    */
   void ProcessMeasurement(MeasurementPackage meas_package);
+
+  void AugmentSigmaPoints();
+  void PredictSigmaPoints(double delta_t);
+  void PredictMeanAndCovariance();
+  void PredictMeasurement(int n_z, const MatrixXd &Zsig, VectorXd &z_pred, MatrixXd &S, MatrixXd &R);
+  void UpdateState(const VectorXd &z, const VectorXd &z_pred, const MatrixXd &S, const MatrixXd &Zsig);
 
   /**
    * Prediction Predicts sigma points, the state, and the state covariance
